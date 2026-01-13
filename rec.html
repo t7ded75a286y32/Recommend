@@ -1,0 +1,848 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Party Vibe Drink Diagnose</title>
+  <style>
+    :root{
+      --ink:#121027;
+      --muted:#5a5876;
+
+      --card:#ffffff;
+      --glass: rgba(255,255,255,.55);
+
+      --pink:#ff3cc8;
+      --purple:#7b2cff;
+      --blue:#2bd3ff;
+      --mint:#2bffb3;
+      --yellow:#ffe84a;
+      --orange:#ff7a2b;
+
+      --shadow: 0 26px 90px rgba(0,0,0,.18);
+      --radius: 28px;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", "Noto Sans JP", "Hiragino Kaku Gothic ProN", Meiryo, Arial, sans-serif;
+      color:var(--ink);
+      min-height:100vh;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:22px;
+      overflow-x:hidden;
+      background:
+        radial-gradient(1200px 700px at 10% 0%, rgba(43,211,255,.35), transparent 60%),
+        radial-gradient(1200px 700px at 100% 0%, rgba(255,60,200,.30), transparent 60%),
+        radial-gradient(900px 600px at 60% 100%, rgba(43,255,179,.22), transparent 65%),
+        linear-gradient(135deg, #fff 0%, #f7f2ff 40%, #f2fbff 70%, #fff 100%);
+      position:relative;
+    }
+
+    /* confetti blobs */
+    .bg{
+      position:fixed;
+      inset:0;
+      pointer-events:none;
+      z-index:0;
+      overflow:hidden;
+    }
+    .blob{
+      position:absolute;
+      width:220px;
+      height:220px;
+      border-radius:40px;
+      filter: blur(0px);
+      opacity:.18;
+      transform: rotate(18deg);
+      animation: floaty 8s ease-in-out infinite;
+      box-shadow: 0 30px 80px rgba(0,0,0,.12);
+    }
+    .b1{left:-70px; top:80px; background:linear-gradient(135deg,var(--pink),var(--blue)); animation-delay:0s;}
+    .b2{right:-90px; top:160px; width:280px; height:280px; border-radius:60px; background:linear-gradient(135deg,var(--yellow),var(--orange)); animation-delay:1.1s;}
+    .b3{left:10%; bottom:-120px; width:320px; height:320px; border-radius:70px; background:linear-gradient(135deg,var(--mint),var(--purple)); animation-delay:.6s;}
+    .b4{right:18%; bottom:-140px; width:260px; height:260px; border-radius:60px; background:linear-gradient(135deg,var(--blue),var(--purple)); animation-delay:1.7s;}
+
+    @keyframes floaty{
+      0%,100%{transform: translateY(0) rotate(18deg)}
+      50%{transform: translateY(-18px) rotate(14deg)}
+    }
+
+    .app{
+      position:relative;
+      z-index:1;
+      width:min(980px, 100%);
+      display:grid;
+      grid-template-columns: 1.25fr .75fr;
+      gap:18px;
+    }
+    @media (max-width: 900px){
+      .app{grid-template-columns:1fr}
+    }
+
+    .card{
+      background: linear-gradient(180deg, rgba(255,255,255,.92), rgba(255,255,255,.86));
+      border: 1px solid rgba(0,0,0,.06);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+      backdrop-filter: blur(8px);
+    }
+
+    .header{
+      padding:22px 22px 14px;
+      background:
+        radial-gradient(900px 220px at 20% 0%, rgba(255,60,200,.22), transparent 60%),
+        radial-gradient(800px 240px at 90% 0%, rgba(43,211,255,.20), transparent 62%),
+        linear-gradient(135deg, rgba(123,44,255,.10), rgba(255,122,43,.08));
+      border-bottom:1px solid rgba(0,0,0,.06);
+    }
+
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:12px;
+    }
+    .logo{
+      width:46px;height:46px;border-radius:18px;
+      background:linear-gradient(135deg, var(--pink), var(--blue));
+      box-shadow: 0 18px 40px rgba(255,60,200,.22);
+      position:relative;
+      overflow:hidden;
+      flex:0 0 auto;
+    }
+    .logo::after{
+      content:"";
+      position:absolute; inset:-40% -20%;
+      background: linear-gradient(90deg, rgba(255,255,255,0), rgba(255,255,255,.8), rgba(255,255,255,0));
+      transform: rotate(25deg);
+      animation: shine 2.2s infinite linear;
+    }
+    @keyframes shine{
+      0%{transform:translateX(-55%) rotate(25deg)}
+      100%{transform:translateX(95%) rotate(25deg)}
+    }
+
+    h1{
+      margin:0;
+      font-size:20px;
+      letter-spacing:.02em;
+      line-height:1.2;
+    }
+    .sub{
+      margin:6px 0 0;
+      color:rgba(18,16,39,.65);
+      font-size:13px;
+      line-height:1.55;
+    }
+
+    /* Progress */
+    .progressWrap{
+      padding:14px 22px 18px;
+      border-bottom: 1px solid rgba(0,0,0,.06);
+      background: linear-gradient(90deg, rgba(255,60,200,.07), rgba(43,211,255,.06), rgba(43,255,179,.06));
+    }
+    .steps{
+      display:grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap:10px;
+      align-items:center;
+    }
+    .step{
+      position:relative;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      gap:8px;
+      user-select:none;
+    }
+    .dot{
+      width:42px; height:42px;
+      border-radius:16px;
+      display:grid;
+      place-items:center;
+      font-weight:1000;
+      border:1px solid rgba(0,0,0,.10);
+      background: linear-gradient(180deg, #fff, #f7f7ff);
+      box-shadow: 0 14px 28px rgba(0,0,0,.10);
+      color: rgba(0,0,0,.72);
+      transition: transform .12s ease, filter .2s ease;
+    }
+    .bar{
+      position:absolute;
+      top:21px;
+      left:50%;
+      right:-50%;
+      height:10px;
+      border-radius:999px;
+      background: rgba(0,0,0,.06);
+      z-index:-1;
+    }
+    .fill{
+      height:100%;
+      border-radius:999px;
+      width:0%;
+      background: linear-gradient(90deg, var(--pink), var(--blue), var(--mint));
+      box-shadow: 0 10px 18px rgba(43,211,255,.18);
+      transition: width .35s ease;
+    }
+    .step:first-child .bar{display:none;}
+
+    .step.active .dot{
+      transform: translateY(-1px) scale(1.03);
+      border-color: rgba(255,60,200,.35);
+      background: linear-gradient(135deg, rgba(255,60,200,.22), rgba(43,211,255,.16));
+    }
+    .step.done .dot{
+      border-color: rgba(43,255,179,.32);
+      background: linear-gradient(135deg, rgba(43,255,179,.20), rgba(123,44,255,.12));
+    }
+    .stepLabel{
+      font-size:11px;
+      color: rgba(18,16,39,.55);
+      font-weight:900;
+      letter-spacing:.06em;
+      text-transform: uppercase;
+    }
+
+    /* Question */
+    .content{ padding:18px 22px 22px; }
+    .qCard{
+      border-radius: 24px;
+      border: 1px solid rgba(0,0,0,.08);
+      background:
+        radial-gradient(900px 220px at 20% 0%, rgba(255,60,200,.14), transparent 60%),
+        radial-gradient(900px 220px at 90% 0%, rgba(43,211,255,.12), transparent 62%),
+        linear-gradient(180deg, rgba(255,255,255,.92), rgba(255,255,255,.86));
+      box-shadow: 0 18px 50px rgba(0,0,0,.10);
+      padding:16px 16px 18px;
+    }
+    .qNum{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:8px 10px;
+      border-radius:999px;
+      border:1px solid rgba(0,0,0,.08);
+      background: rgba(255,255,255,.7);
+      font-size:12px;
+      font-weight:1000;
+    }
+    .qTitle{
+      margin:12px 0 0;
+      font-size:18px;
+      font-weight:1000;
+      line-height:1.35;
+      letter-spacing:.01em;
+    }
+
+    .scale{
+      display:grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap:10px;
+      margin-top:14px;
+      align-items:stretch;
+    }
+    .opt{ position:relative; }
+    .opt input{
+      position:absolute;
+      inset:0;
+      opacity:0;
+      cursor:pointer;
+    }
+    .pill{
+      user-select:none;
+      height:54px;
+      border-radius:18px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-weight:1000;
+      font-size:16px;
+      border:1px solid rgba(0,0,0,.10);
+      background: linear-gradient(180deg, #fff, #f7f7ff);
+      box-shadow: 0 18px 38px rgba(0,0,0,.12);
+      transition: transform .10s ease, border-color .2s ease, background .2s ease, filter .2s ease;
+    }
+    .opt input:checked + .pill{
+      border-color: rgba(255,60,200,.45);
+      background: linear-gradient(135deg, rgba(255,60,200,.25), rgba(43,211,255,.18));
+      transform: translateY(-1px);
+      filter: saturate(1.1);
+    }
+    .hint{
+      display:flex;
+      justify-content:space-between;
+      margin-top:10px;
+      color: rgba(18,16,39,.60);
+      font-size:12px;
+      font-weight:900;
+    }
+
+    .actions{
+      display:flex;
+      gap:10px;
+      margin-top:14px;
+      flex-wrap:wrap;
+      justify-content:space-between;
+    }
+    .leftBtns{display:flex; gap:10px; flex-wrap:wrap;}
+    button{
+      border:none;
+      border-radius:18px;
+      padding:12px 14px;
+      font-weight:1000;
+      cursor:pointer;
+      transition: transform .10s ease, filter .2s ease, opacity .2s ease;
+    }
+    .primary{
+      background: linear-gradient(135deg, var(--pink), var(--blue));
+      color:#fff;
+      box-shadow: 0 20px 46px rgba(255,60,200,.18);
+      min-width: 180px;
+    }
+    .secondary{
+      background: rgba(255,255,255,.8);
+      border:1px solid rgba(0,0,0,.10);
+      color: rgba(18,16,39,.85);
+    }
+    button:hover{filter:brightness(1.05)}
+    button:active{transform:translateY(1px)}
+    button:disabled{opacity:.55; cursor:not-allowed}
+
+    /* Right panel */
+    .side{ padding:18px; display:flex; flex-direction:column; gap:12px; }
+    .badge{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:10px 12px;
+      border-radius:999px;
+      background:rgba(255,232,74,.25);
+      border:1px solid rgba(255,232,74,.35);
+      color:#5a4700;
+      font-weight:1000;
+      font-size:12px;
+      width:max-content;
+      box-shadow: 0 16px 34px rgba(255,232,74,.18);
+    }
+    .panelTitle{ margin:0; font-size:16px; font-weight:1000; }
+    .panelText{
+      margin:0;
+      color:rgba(18,16,39,.62);
+      font-size:13px;
+      line-height:1.7;
+    }
+
+    .result{
+      margin-top:4px;
+      border-radius: var(--radius);
+      border:1px solid rgba(0,0,0,.10);
+      background:
+        radial-gradient(900px 260px at 20% 0%, rgba(43,255,179,.16), transparent 60%),
+        radial-gradient(900px 260px at 90% 0%, rgba(255,60,200,.14), transparent 62%),
+        linear-gradient(180deg, rgba(255,255,255,.92), rgba(255,255,255,.86));
+      box-shadow: 0 26px 70px rgba(0,0,0,.14);
+      padding:16px;
+      display:none;
+    }
+    .result.show{display:block}
+
+    .big{
+      display:grid;
+      gap:12px;
+      justify-items:center;
+      text-align:center;
+      padding:6px 6px 2px;
+    }
+    .tagline{
+      margin:0;
+      font-weight:1000;
+      font-size:13px;
+      line-height:1.7;
+      padding:12px 12px;
+      border-radius:20px;
+      background: rgba(123,44,255,.10);
+      border:1px solid rgba(123,44,255,.18);
+      color: rgba(18,16,39,.86);
+    }
+    .answer{
+      margin:0;
+      font-size:22px;
+      font-weight:1000;
+      letter-spacing:.02em;
+    }
+    .desc{
+      margin:0;
+      color: rgba(18,16,39,.62);
+      font-size:13px;
+      line-height:1.75;
+      max-width: 38ch;
+    }
+    .art{
+      width:min(320px, 100%);
+      height:auto;
+      display:block;
+      filter: drop-shadow(0 26px 60px rgba(0,0,0,.18));
+    }
+    .footer{
+      margin-top:auto;
+      font-size:11px;
+      color:rgba(0,0,0,.45);
+      text-align:center;
+      padding-top:6px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="bg" aria-hidden="true">
+    <div class="blob b1"></div>
+    <div class="blob b2"></div>
+    <div class="blob b3"></div>
+    <div class="blob b4"></div>
+  </div>
+
+  <div class="app">
+    <!-- LEFT -->
+    <section class="card">
+      <div class="header">
+        <div class="brand">
+          <div class="logo"></div>
+          <div>
+            <h1>Party Vibe Drink Diagnose</h1>
+            <p class="sub">直感で1〜5を選ぶだけ。テンポよく次へ。</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="progressWrap">
+        <div class="steps" id="steps">
+          <div class="step" data-step="1">
+            <div class="bar"><div class="fill"></div></div>
+            <div class="dot">1</div>
+            <div class="stepLabel">Q1</div>
+          </div>
+          <div class="step" data-step="2">
+            <div class="bar"><div class="fill"></div></div>
+            <div class="dot">2</div>
+            <div class="stepLabel">Q2</div>
+          </div>
+          <div class="step" data-step="3">
+            <div class="bar"><div class="fill"></div></div>
+            <div class="dot">3</div>
+            <div class="stepLabel">Q3</div>
+          </div>
+          <div class="step" data-step="4">
+            <div class="bar"><div class="fill"></div></div>
+            <div class="dot">4</div>
+            <div class="stepLabel">Q4</div>
+          </div>
+          <div class="step" data-step="5">
+            <div class="bar"><div class="fill"></div></div>
+            <div class="dot">5</div>
+            <div class="stepLabel">Q5</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <div class="qCard" id="qCard">
+          <div class="qNum" id="qNum">Question 1 / 5</div>
+          <div class="qTitle" id="qTitle">—</div>
+
+          <div class="scale" id="scale">
+            <!-- buttons injected -->
+          </div>
+          <div class="hint" id="hint">
+            <span>低い</span><span>高い</span>
+          </div>
+
+          <div class="actions">
+            <div class="leftBtns">
+              <button class="secondary" id="btnBack" type="button">戻る</button>
+              <button class="secondary" id="btnReset" type="button">リセット</button>
+            </div>
+            <button class="primary" id="btnNext" type="button" disabled>次へ</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- RIGHT -->
+    <aside class="card">
+      <div class="side">
+        <span class="badge">🎊 HYPE MODE</span>
+        <h2 class="panelTitle">結果</h2>
+        <p class="panelText" id="sideText">最後まで答えると、ここに出る。</p>
+
+        <div id="resultBox" class="result" aria-live="polite">
+          <div class="big">
+            <div id="artWrap"></div>
+            <p class="tagline" id="catchphrase">—</p>
+            <p class="answer" id="answerTitle">—</p>
+            <p class="desc" id="answerDesc">—</p>
+          </div>
+        </div>
+
+        <div class="footer">Created by Yuki A</div>
+      </div>
+    </aside>
+  </div>
+
+  <script>
+    // ===== Questions =====
+    const QUESTIONS = [
+      {
+        title: "一人でいるよりもみんなでワイワイする方が好きだ",
+        left: "一人が好き", right: "ワイワイ好き"
+      },
+      {
+        title: "今の雰囲気は自分の性格に合っている",
+        left: "合わない", right: "最高に合う"
+      },
+      {
+        title: "今日は早く帰りたい",
+        left: "まだいける", right: "今すぐ帰りたい"
+      },
+      {
+        title: "今この場に気になっている人がいる",
+        left: "いない", right: "いる"
+      },
+      {
+        title: "今の酔い具合",
+        left: "しらふ寄り", right: "かなり酔い"
+      },
+    ];
+
+    // ===== State =====
+    let step = 1; // 1..5
+    const answers = { q1:null, q2:null, q3:null, q4:null, q5:null };
+
+    // ===== Elements =====
+    const stepsEl = document.getElementById("steps");
+    const qNum = document.getElementById("qNum");
+    const qTitle = document.getElementById("qTitle");
+    const scale = document.getElementById("scale");
+    const hint = document.getElementById("hint");
+
+    const btnBack = document.getElementById("btnBack");
+    const btnReset = document.getElementById("btnReset");
+    const btnNext = document.getElementById("btnNext");
+
+    const sideText = document.getElementById("sideText");
+    const resultBox = document.getElementById("resultBox");
+    const artWrap = document.getElementById("artWrap");
+    const catchphrase = document.getElementById("catchphrase");
+    const answerTitle = document.getElementById("answerTitle");
+    const answerDesc = document.getElementById("answerDesc");
+
+    // ===== SVG Illustrations (accurate-ish) =====
+    function svgTequilaShots(count){
+      // Shot glass + tequila + lime + salt (simple but recognizable)
+      const w = (count === 2) ? 340 : 240;
+      const glasses = Array.from({length: count}).map((_, i) => {
+        const x = (count === 2) ? (20 + i*160) : 50;
+        return `
+          <g transform="translate(${x} 36)">
+            <!-- salt -->
+            <rect x="14" y="26" width="112" height="8" rx="4" fill="rgba(255,255,255,.75)"/>
+            <!-- glass -->
+            <path d="M22 34 L118 34 L108 160 Q70 190 32 160 Z"
+              fill="rgba(255,255,255,.88)" stroke="rgba(0,0,0,.10)" stroke-width="3"/>
+            <path d="M34 62 L106 62 L98 148 Q70 168 42 148 Z"
+              fill="rgba(255,226,120,.70)"/>
+            <path d="M42 72 L98 72" stroke="rgba(255,255,255,.55)" stroke-width="6" stroke-linecap="round"/>
+            <!-- shine -->
+            <path d="M42 48 C36 70 38 96 44 126" stroke="rgba(255,255,255,.55)" stroke-width="6" stroke-linecap="round"/>
+            <!-- lime -->
+            <g transform="translate(90 10) rotate(-16)">
+              <circle cx="24" cy="24" r="20" fill="rgba(43,255,179,.75)" stroke="rgba(0,0,0,.10)" stroke-width="3"/>
+              <path d="M24 4 L24 44" stroke="rgba(255,255,255,.55)" stroke-width="3"/>
+              <path d="M6 16 L42 32" stroke="rgba(255,255,255,.45)" stroke-width="3"/>
+              <path d="M6 32 L42 16" stroke="rgba(255,255,255,.45)" stroke-width="3"/>
+            </g>
+          </g>
+        `;
+      }).join("");
+
+      return `
+        <svg class="art" viewBox="0 0 ${w} 240" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="テキーラショットのイラスト">
+          <defs>
+            <linearGradient id="bgShot" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0" stop-color="rgba(255,60,200,.25)"/>
+              <stop offset="1" stop-color="rgba(43,211,255,.22)"/>
+            </linearGradient>
+          </defs>
+          <rect x="0" y="0" width="${w}" height="240" rx="30" fill="url(#bgShot)"/>
+          <circle cx="${w-62}" cy="54" r="26" fill="rgba(255,255,255,.35)"/>
+          <circle cx="58" cy="58" r="18" fill="rgba(255,255,255,.28)"/>
+          ${glasses}
+          <path d="M22 210 Q${w/2} 232 ${w-22} 210" stroke="rgba(0,0,0,.08)" stroke-width="7" stroke-linecap="round" fill="none"/>
+          <text x="${w/2}" y="228" text-anchor="middle" font-size="14" font-weight="1000" fill="rgba(0,0,0,.55)">TEQUILA</text>
+        </svg>
+      `;
+    }
+
+    function svgOolongTea(){
+      // Tall glass + ice + tea
+      return `
+        <svg class="art" viewBox="0 0 340 240" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="ウーロン茶のイラスト">
+          <defs>
+            <linearGradient id="bgTea" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0" stop-color="rgba(43,255,179,.22)"/>
+              <stop offset="1" stop-color="rgba(123,44,255,.18)"/>
+            </linearGradient>
+          </defs>
+          <rect x="0" y="0" width="340" height="240" rx="30" fill="url(#bgTea)"/>
+          <circle cx="280" cy="54" r="26" fill="rgba(255,255,255,.35)"/>
+          <circle cx="58" cy="54" r="18" fill="rgba(255,255,255,.28)"/>
+
+          <!-- glass -->
+          <g transform="translate(100 24)">
+            <path d="M40 20 L140 20 L130 190 Q90 214 50 190 Z"
+              fill="rgba(255,255,255,.88)" stroke="rgba(0,0,0,.10)" stroke-width="3"/>
+            <!-- tea -->
+            <path d="M56 96 L124 96 L118 178 Q90 196 62 178 Z"
+              fill="rgba(170,110,60,.55)"/>
+            <!-- ice -->
+            <g opacity=".55">
+              <rect x="62" y="72" width="26" height="22" rx="6" fill="rgba(255,255,255,.9)"/>
+              <rect x="92" y="64" width="28" height="24" rx="6" fill="rgba(255,255,255,.85)"/>
+              <rect x="84" y="86" width="30" height="26" rx="6" fill="rgba(255,255,255,.8)"/>
+            </g>
+            <!-- shine -->
+            <path d="M58 36 C50 70 52 106 60 150" stroke="rgba(255,255,255,.55)" stroke-width="7" stroke-linecap="round"/>
+          </g>
+
+          <path d="M22 210 Q170 232 318 210" stroke="rgba(0,0,0,.08)" stroke-width="7" stroke-linecap="round" fill="none"/>
+          <text x="170" y="228" text-anchor="middle" font-size="14" font-weight="1000" fill="rgba(0,0,0,.55)">OOLONG TEA</text>
+        </svg>
+      `;
+    }
+
+    // ===== Catchphrase (煽り系・長めOK) =====
+    function bucket(v){
+      if (v >= 4) return "H";
+      if (v <= 2) return "L";
+      return "M";
+    }
+    function pick(map, b){
+      return map[b] ?? map["M"];
+    }
+    function makeCatchphrase(q1, q2, q3, q4){
+      const b1 = bucket(q1);
+      const b2 = bucket(q2);
+      const b3 = bucket(q3);
+      const b4 = bucket(q4);
+
+      const party = pick({H:"宴の点火係", M:"ノリ調整班", L:"静寂の王"}, b1);
+      const vibe  = pick({H:"空気の支配者", M:"中立の顔", L:"逆張りの鬼"}, b2);
+      const home  = pick({H:"帰宅最速", M:"省エネ運転", L:"終電破壊者"}, b3);
+      const love  = pick({H:"恋、暴走", M:"視線だけ番長", L:"無風モード"}, b4);
+
+      let mode = "default";
+      if (b4 === "H") mode = "love";
+      else if (b3 === "H") mode = "home";
+      else if (b1 === "H") mode = "party";
+      else if (b2 === "H") mode = "vibe";
+
+      const duo = (mode === "love") ? `${love} × ${party}`
+                : (mode === "home") ? `${home} × ${vibe}`
+                : (mode === "party") ? `${party} × ${love}`
+                : (mode === "vibe") ? `${vibe} × ${party}`
+                : `${vibe} × ${home}`;
+
+      const taunts = {
+        love: [
+          "そのまま黙ってたら、今夜は“何も起きないまま終わる”。それで満足？ なら一生そのままだよ。",
+          "視線送ってるだけで進む恋なんてない。動ける人だけが勝つ。ほら、行け。",
+          "迷ってる間に誰かに取られる。自分の夜を他人に渡すな。今、仕掛けろ。"
+        ],
+        home: [
+          "帰りたいのに粘るの、いちばんダサい。帰るなら今。決断できない人から夜は腐る。",
+          "疲れてるのに無理して笑う？ その“いい人ムーブ”やめな。撤収が一番スマート。",
+          "明日もあなたの人生は続く。ここで消耗してどうする。潔く帰れ。"
+        ],
+        party: [
+          "その空気、誰かが点火しないと死ぬ。ほら、あなたの番。燃やせ。",
+          "遠慮してる暇ある？ 盛り上げた人が主役。黙ってる人は背景だよ。",
+          "ノるなら全力。中途半端が一番つまらない。ぶち上げに行け。"
+        ],
+        vibe: [
+          "空気読めるのに手を出さない？ それ、ただの傍観者。操れ。",
+          "場を変えられるのに変えないなら、文句言う資格ない。動かせ。",
+          "あなたが動けば雰囲気が変わる。動かないなら、流されるだけ。"
+        ],
+        default: [
+          "安全圏でニコニコしてるだけ？ それは“参加”じゃなくて“観覧”。今夜を無駄にするな。",
+          "迷うなら一回決めろ。決めた人だけが楽しい。決めない人は置いてかれる。",
+          "何者にもならないまま終わる？ それだけはやめとけ。さあ、選べ。"
+        ]
+      };
+
+      // 空気合わない（Q2低め）は反骨煽りを優先
+      if (b2 === "L"){
+        const extra = [
+          "合わないなら、合わせるな。飲まれるな。あなたのペースで流れをひっくり返せ。",
+          "“空気に合わせる”って言い訳で自分を消すな。刺さる一言で場を動かせ。"
+        ];
+        return `【${duo}】${extra[Math.floor(Math.random() * extra.length)]}`;
+      }
+
+      const pool = taunts[mode] ?? taunts.default;
+      return `【${duo}】${pool[Math.floor(Math.random() * pool.length)]}`;
+    }
+
+    // ===== Recommend (logic hidden in UI text) =====
+    function recommendByQ5(q5){
+      if (q5 === 1 || q5 === 2){
+        return {
+          title: "テキーラショット 2杯",
+          desc: "一気にテンション上げるならこれ。迷ってる暇はない。",
+          art: svgTequilaShots(2)
+        };
+      }
+      if (q5 === 3 || q5 === 4){
+        return {
+          title: "テキーラショット",
+          desc: "ここでキメる一杯。場の空気を“あなた側”に寄せろ。",
+          art: svgTequilaShots(1)
+        };
+      }
+      return {
+        title: "ウーロン茶",
+        desc: "今は攻めない。クールダウンして体勢を立て直せ。",
+        art: svgOolongTea()
+      };
+    }
+
+    // ===== UI render =====
+    function keyOfStep(s){ return `q${s}`; }
+
+    function renderScale(selected){
+      scale.innerHTML = "";
+      for(let i=1;i<=5;i++){
+        const id = `s${step}_${i}`;
+        const label = document.createElement("label");
+        label.className = "opt";
+        label.innerHTML = `
+          <input type="radio" name="scale" value="${i}" id="${id}" ${selected===i ? "checked":""}>
+          <span class="pill">${i}</span>
+        `;
+        label.querySelector("input").addEventListener("change", (e) => {
+          answers[keyOfStep(step)] = Number(e.target.value);
+          updateNextState();
+          // クリックしたらテンポよく自動で次へ（最後以外）
+          if (step < 5) {
+            setTimeout(() => goNext(), 120);
+          } else {
+            // 最後は“次へ”が“結果を見る”になるので自動遷移しない
+          }
+        });
+        scale.appendChild(label);
+      }
+    }
+
+    function updateProgress(){
+      const stepNodes = stepsEl.querySelectorAll(".step");
+      stepNodes.forEach((node) => {
+        const s = Number(node.dataset.step);
+        node.classList.toggle("active", s === step);
+        node.classList.toggle("done", answers[keyOfStep(s)] !== null && s < step);
+
+        // fill bar for each step after the first
+        const fill = node.querySelector(".fill");
+        if (!fill) return;
+        if (s === 1) return;
+
+        // Fill is based on completion of previous step
+        const prevDone = answers[keyOfStep(s-1)] !== null;
+        fill.style.width = prevDone ? "100%" : "0%";
+      });
+    }
+
+    function updateNextState(){
+      const cur = answers[keyOfStep(step)];
+      btnNext.disabled = (cur === null);
+
+      if (step < 5) btnNext.textContent = "次へ";
+      else btnNext.textContent = "結果を見る";
+    }
+
+    function renderStep(){
+      const q = QUESTIONS[step-1];
+      qNum.textContent = `Question ${step} / 5`;
+      qTitle.textContent = q.title;
+      hint.innerHTML = `<span>${q.left}</span><span>${q.right}</span>`;
+      renderScale(answers[keyOfStep(step)]);
+      btnBack.disabled = (step === 1);
+      updateProgress();
+      updateNextState();
+
+      // result area hints
+      if (step < 5){
+        sideText.textContent = "まだ途中。テンポよく行け。";
+      } else {
+        sideText.textContent = "最後。ここでブレるな。";
+      }
+    }
+
+    function goNext(){
+      if (answers[keyOfStep(step)] === null) return;
+      if (step < 5){
+        step += 1;
+        renderStep();
+        return;
+      }
+      // finish -> show result
+      showResult();
+    }
+
+    function goBack(){
+      if (step > 1){
+        step -= 1;
+        renderStep();
+      }
+    }
+
+    function resetAll(){
+      step = 1;
+      answers.q1 = answers.q2 = answers.q3 = answers.q4 = answers.q5 = null;
+      resultBox.classList.remove("show");
+      artWrap.innerHTML = "";
+      catchphrase.textContent = "—";
+      answerTitle.textContent = "—";
+      answerDesc.textContent = "—";
+      sideText.textContent = "最後まで答えると、ここに出る。";
+      renderStep();
+    }
+
+    function showResult(){
+      // キャッチコピーは1〜4から作る（UIにはロジック表示しない）
+      const cp = makeCatchphrase(answers.q1, answers.q2, answers.q3, answers.q4);
+      catchphrase.textContent = cp;
+
+      const rec = recommendByQ5(answers.q5);
+      answerTitle.textContent = rec.title;
+      answerDesc.textContent = rec.desc;
+      artWrap.innerHTML = rec.art;
+
+      resultBox.classList.add("show");
+      sideText.textContent = "結果出た。言い訳は禁止。";
+      // right panelへスクロール（モバイル）
+      resultBox.scrollIntoView({behavior:"smooth", block:"start"});
+    }
+
+    // ===== Events =====
+    btnNext.addEventListener("click", goNext);
+    btnBack.addEventListener("click", goBack);
+    btnReset.addEventListener("click", resetAll);
+
+    // init
+    renderStep();
+  </script>
+</body>
+</html>
