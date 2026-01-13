@@ -1,3 +1,4 @@
+```html
 <!doctype html>
 <html lang="ja">
 <head>
@@ -44,7 +45,6 @@
       overflow-x:hidden;
     }
 
-    /* subtle “bar lights” */
     .lights{
       position:fixed; inset:0;
       pointer-events:none;
@@ -95,7 +95,6 @@
       backdrop-filter: blur(10px);
     }
 
-    /* header */
     .header{
       padding:20px 22px 14px;
       border-bottom:1px solid rgba(255,255,255,.06);
@@ -144,12 +143,79 @@
       line-height:1.6;
     }
 
+    .content{ padding:18px 22px 22px; }
+
+    /* start screen */
+    .startCard{
+      border-radius: 22px;
+      border:1px solid rgba(255,255,255,.08);
+      background:
+        radial-gradient(900px 260px at 25% 0%, rgba(215,180,106,.10), transparent 60%),
+        linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02));
+      box-shadow: 0 22px 70px rgba(0,0,0,.35);
+      padding:18px;
+      display:none;
+    }
+    .startCard.show{display:block}
+
+    .startBadge{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:8px 10px;
+      border-radius:999px;
+      border:1px solid rgba(215,180,106,.24);
+      background: rgba(0,0,0,.20);
+      font-size:11px;
+      letter-spacing:.12em;
+      text-transform: uppercase;
+      color: rgba(242,216,154,.85);
+      margin-bottom:10px;
+    }
+    .startTitle{
+      margin:6px 0 0;
+      font-size:20px;
+      font-weight:900;
+      letter-spacing:.02em;
+      line-height:1.35;
+    }
+    .startText{
+      margin:10px 0 0;
+      color: rgba(242,240,234,.70);
+      font-size:13px;
+      line-height:1.8;
+    }
+    .startList{
+      margin:12px 0 0;
+      padding:12px 12px 12px 18px;
+      border-radius:18px;
+      border:1px solid rgba(255,255,255,.08);
+      background: rgba(0,0,0,.18);
+      color: rgba(242,240,234,.72);
+      font-size:13px;
+      line-height:1.8;
+    }
+    .startList li{margin:6px 0}
+    .startNote{
+      margin:12px 0 0;
+      padding:12px;
+      border-radius:18px;
+      border:1px solid rgba(215,180,106,.18);
+      background: rgba(215,180,106,.08);
+      color: rgba(242,216,154,.90);
+      font-size:12px;
+      line-height:1.7;
+    }
+
     /* progress */
     .progressWrap{
       padding:14px 22px 18px;
       border-bottom:1px solid rgba(255,255,255,.06);
       background: linear-gradient(90deg, rgba(255,255,255,.03), rgba(215,180,106,.05), rgba(255,255,255,.02));
+      display:none;
     }
+    .progressWrap.show{display:block}
+
     .steps{
       display:grid;
       grid-template-columns: repeat(5, 1fr);
@@ -216,8 +282,7 @@
       color: rgba(242,240,234,.55);
     }
 
-    /* question */
-    .content{ padding:18px 22px 22px; }
+    /* question card */
     .qCard{
       border-radius: 22px;
       border:1px solid rgba(255,255,255,.08);
@@ -226,7 +291,10 @@
         linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02));
       box-shadow: 0 22px 70px rgba(0,0,0,.35);
       padding:16px 16px 18px;
+      display:none;
     }
+    .qCard.show{display:block}
+
     .qNum{
       display:inline-flex;
       align-items:center;
@@ -442,7 +510,7 @@
         </div>
       </div>
 
-      <div class="progressWrap">
+      <div class="progressWrap" id="progressWrap">
         <div class="steps" id="steps">
           <div class="step" data-step="1"><div class="bar"><div class="fill"></div></div><div class="dot">1</div><div class="stepLabel">Q1</div></div>
           <div class="step" data-step="2"><div class="bar"><div class="fill"></div></div><div class="dot">2</div><div class="stepLabel">Q2</div></div>
@@ -453,6 +521,32 @@
       </div>
 
       <div class="content">
+        <!-- START SCREEN -->
+        <div class="startCard show" id="startCard">
+          <div class="startBadge">HOW IT WORKS</div>
+          <div class="startTitle">今夜の一杯は、5つの選択で決まる。</div>
+          <p class="startText">
+            直感で1〜5を選んでください。<br/>
+            迷いは味を薄くします。ここはバーです。
+          </p>
+          <ul class="startList">
+            <li><strong>全5問</strong>：1問ずつ進みます。</li>
+            <li><strong>操作</strong>：数字をタップ → 自動で次の質問へ。</li>
+            <li><strong>最後</strong>：5問目まで答えると、右側に結果が出ます。</li>
+          </ul>
+          <div class="startNote">
+            ※飲酒はほどほどに。体調が悪い日や未成年の飲酒はNG。無理はしないで。
+          </div>
+
+          <div class="actions" style="margin-top:14px;">
+            <div class="leftBtns">
+              <button class="secondary" id="btnStartReset" type="button">リセット</button>
+            </div>
+            <button class="primary" id="btnStart" type="button">はじめる</button>
+          </div>
+        </div>
+
+        <!-- QUESTION SCREEN -->
         <div class="qCard" id="qCard">
           <div class="qNum" id="qNum">Question 1 / 5</div>
           <div class="qTitle" id="qTitle">—</div>
@@ -476,7 +570,7 @@
       <div class="side">
         <span class="badge">HOUSE SELECTION</span>
         <h2 class="panelTitle">Result</h2>
-        <p class="panelText" id="sideText">最後まで答えると、ここに一杯が届く。</p>
+        <p class="panelText" id="sideText">スタートを押すと、ここに一杯が届く。</p>
 
         <div id="resultBox" class="result" aria-live="polite">
           <div class="big">
@@ -503,10 +597,18 @@
     ];
 
     // ===== State =====
+    let started = false;
     let step = 1; // 1..5
     const answers = { q1:null, q2:null, q3:null, q4:null, q5:null };
 
     // ===== Elements =====
+    const startCard = document.getElementById("startCard");
+    const qCard = document.getElementById("qCard");
+    const progressWrap = document.getElementById("progressWrap");
+
+    const btnStart = document.getElementById("btnStart");
+    const btnStartReset = document.getElementById("btnStartReset");
+
     const stepsEl = document.getElementById("steps");
     const qNum = document.getElementById("qNum");
     const qTitle = document.getElementById("qTitle");
@@ -590,27 +692,25 @@
       `;
     }
 
-    // ===== Catchphrase (1つにまとめて分かりやすく) =====
+    // ===== Catchphrase (1つの文章) =====
     function bucket(v){
       if (v >= 4) return "H";
       if (v <= 2) return "L";
       return "M";
     }
 
-    // q1: ワイワイ / q2: フィット / q3: 帰りたい / q4: 気になる人
     function makeCatchphrase(q1, q2, q3, q4){
       const b1 = bucket(q1), b2 = bucket(q2), b3 = bucket(q3), b4 = bucket(q4);
 
-      // “大人のバー”っぽい言い回し（煽りは残しつつ上品に）
       if (b4 === "H"){
-        if (b1 === "H") return "今夜は「主役を取りに行く」側。視線じゃなく一言で決めて。";
+        if (b1 === "H") return "今夜は主役を取りに行け。視線じゃなく“ひと言”で決める夜だ。";
         if (b2 === "L") return "空気が合わなくても関係ない。欲しい相手だけ、あなたのペースで落とせ。";
         return "迷う時間がいちばん無駄。話しかけた人だけが、夜を持っていく。";
       }
 
       if (b3 === "H"){
         if (b2 === "H") return "撤収が美学。盛り上げ役じゃなく、余裕のある人が勝つ。";
-        if (b1 === "H") return "テンションは上げられる。でも今夜は引くのが正解。スマートに帰れ。";
+        if (b1 === "H") return "上げる力はある。でも今夜は引くのが正解。スマートに帰れ。";
         return "無理して残るのはダサい。帰りたいなら帰る、それが大人。";
       }
 
@@ -668,7 +768,7 @@
           answers[keyOfStep(step)] = Number(e.target.value);
           updateNextState();
 
-          // Q1〜Q4はテンポ良く自動で次へ（バーっぽい所作）
+          // Q1〜Q4は自動で次へ
           if (step < 5) setTimeout(goNext, 140);
         });
         scale.appendChild(label);
@@ -710,6 +810,15 @@
       else sideText.textContent = "最後。ここでブレると、夜が軽くなる。";
     }
 
+    function start(){
+      started = true;
+      startCard.classList.remove("show");
+      qCard.classList.add("show");
+      progressWrap.classList.add("show");
+      sideText.textContent = "始めよう。静かに、でも迷わず。";
+      renderStep();
+    }
+
     function goNext(){
       if (answers[keyOfStep(step)] === null) return;
       if (step < 5){
@@ -728,24 +837,30 @@
     }
 
     function resetAll(){
+      started = false;
       step = 1;
       answers.q1 = answers.q2 = answers.q3 = answers.q4 = answers.q5 = null;
 
+      // UI reset
       resultBox.classList.remove("show");
       artWrap.innerHTML = "";
       catchphrase.textContent = "—";
       answerTitle.textContent = "—";
       answerDesc.textContent = "—";
-      sideText.textContent = "最後まで答えると、ここに一杯が届く。";
 
-      renderStep();
+      // show start screen
+      qCard.classList.remove("show");
+      progressWrap.classList.remove("show");
+      startCard.classList.add("show");
+
+      sideText.textContent = "スタートを押すと、ここに一杯が届く。";
+      btnNext.disabled = true;
+      btnNext.textContent = "次へ";
     }
 
     function showResult(){
-      // キャッチコピー：1〜4を「一つの文章」にまとめて表示
       catchphrase.textContent = makeCatchphrase(answers.q1, answers.q2, answers.q3, answers.q4);
 
-      // おすすめ：UIには分岐ロジックを見せない
       const rec = recommendByQ5(answers.q5);
       answerTitle.textContent = rec.title;
       answerDesc.textContent = rec.desc;
@@ -757,12 +872,17 @@
     }
 
     // ===== Events =====
+    btnStart.addEventListener("click", start);
+    btnStartReset.addEventListener("click", resetAll);
+
     btnNext.addEventListener("click", goNext);
     btnBack.addEventListener("click", goBack);
     btnReset.addEventListener("click", resetAll);
 
-    // init
-    renderStep();
+    // init: show start, hide quiz/progress
+    resetAll();
   </script>
 </body>
 </html>
+```
+
